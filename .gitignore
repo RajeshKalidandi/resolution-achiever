@@ -13,6 +13,9 @@
 # production
 /build
 
+*.node
+node_modules/@next/swc-win32-x64-msvc/
+
 # misc
 .DS_Store
 *.pem
