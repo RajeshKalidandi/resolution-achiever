@@ -35,7 +35,10 @@ export default function NewResolutionPage() {
       status: 'not_started' as const,
       progress: 0,
       reflection: null,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      is_private: true,
+      streak_count: 0,
+      last_check_in: null
     }
 
     try {
