@@ -257,7 +257,7 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
 
           <div className="mb-6">
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setShowTriggerForm(!showTriggerForm)}
               className="w-full"
             >
