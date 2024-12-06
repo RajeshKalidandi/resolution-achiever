@@ -22,7 +22,7 @@ export function HabitCard({ habit, onComplete }: HabitCardProps) {
       await habitService.logHabitCompletion(habit.id)
       toast.success('Habit completed!')
       onComplete()
-    } catch (error) {
+    } catch {
       toast.error('Failed to complete habit')
     } finally {
       setIsLoading(false)

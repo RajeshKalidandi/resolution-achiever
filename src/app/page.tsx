@@ -94,7 +94,7 @@ export default function Home() {
           transition={{ staggerChildren: 0.2 }}
           className="mt-32 grid w-full max-w-6xl gap-8 px-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <motion.div
               key={feature.title}
               variants={fadeIn}

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CheckCircle2, Circle, Clock, Target, Star, Shield } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Star, Shield } from 'lucide-react'
 import type { Resolution, Habit, Addiction } from '@/types/database.types'
 
 interface RecentActivityProps {

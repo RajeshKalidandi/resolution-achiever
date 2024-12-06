@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
 import { AppError } from '@/lib/errors'
@@ -17,20 +17,16 @@ export function EmergencySupport({ userId }: EmergencySupportProps) {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
 
-  useEffect(() => {
-    loadContacts()
-  }, [userId])
-
-  const loadContacts = async () => {
+  const loadContacts = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data: contacts, error } = await supabase
         .from('emergency_contacts')
         .select('*')
         .eq('user_id', userId)
         .order('created_at')
 
       if (error) throw new AppError(error.message, error.code, 500)
-      setContacts(data || [])
+      setContacts(contacts || [])
     } catch (error) {
       if (error instanceof AppError) {
         toast.error(error.message)
@@ -40,7 +36,11 @@ export function EmergencySupport({ userId }: EmergencySupportProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    loadContacts()
+  }, [loadContacts])
 
   const handleAddContact = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

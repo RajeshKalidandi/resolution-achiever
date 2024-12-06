@@ -20,21 +20,23 @@ export function ProgressTracker({ resolution, milestones, onUpdate }: ProgressTr
   const [progressHistory, setProgressHistory] = useState<{ date: string; progress: number }[]>([])
 
   useEffect(() => {
-    loadProgressHistory()
-  }, [resolution.id])
+    const loadProgressHistory = async () => {
+      try {
+        const { data: history, error } = await supabase
+          .from('progress_history')
+          .select('*')
+          .eq('resolution_id', resolution.id)
+          .order('created_at', { ascending: true })
 
-  const loadProgressHistory = async () => {
-    try {
-      const history = await progressService.getProgressHistory(resolution.id)
-      setProgressHistory(history)
-    } catch (error) {
-      if (error instanceof AppError) {
-        toast.error(error.message)
-      } else {
-        toast.error('Failed to load progress history')
+        if (error) throw error
+        setProgressHistory(history || [])
+      } catch (error) {
+        console.error('Error loading progress history:', error)
       }
     }
-  }
+
+    loadProgressHistory()
+  }, [resolution.id])
 
   const handleMilestoneToggle = async (milestone: Milestone) => {
     setUpdating(true)

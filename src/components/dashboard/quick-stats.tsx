@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trophy, Target, Share2, TrendingUp, Star, Shield } from 'lucide-react'
+import { Target, Trophy, Star, Shield } from 'lucide-react'
 import type { Resolution, Habit, Addiction } from '@/types/database.types'
 
 interface QuickStatsProps {
@@ -18,16 +18,13 @@ const calculateStats = (
   addictions: Addiction[]
 ) => {
   const allResolutions = [...personalResolutions, ...sharedResolutions]
-  const activeHabits = habits.filter(h => !h.archived)
-  const activeAddictions = addictions.filter(a => !a.archived)
   
   return {
     totalResolutions: allResolutions.length,
     completedResolutions: allResolutions.filter(r => r.status === 'completed').length,
-    inProgressResolutions: allResolutions.filter(r => r.status === 'in_progress').length,
-    totalHabits: activeHabits.length,
-    streakingHabits: activeHabits.filter(h => h.current_streak > 0).length,
-    recoveryStrength: activeAddictions.reduce((acc, a) => acc + (a.current_streak || 0), 0) / (activeAddictions.length || 1)
+    totalHabits: habits.filter(h => !h.archived).length,
+    streakingHabits: habits.filter(h => !h.archived && h.current_streak > 0).length,
+    recoveryStrength: addictions.reduce((acc, a) => acc + (a.current_streak || 0), 0) / (addictions.filter(a => !a.archived).length || 1)
   }
 }
 
@@ -35,7 +32,6 @@ export function QuickStats({ personalResolutions, sharedResolutions, habits, add
   const {
     totalResolutions,
     completedResolutions,
-    inProgressResolutions,
     totalHabits,
     streakingHabits,
     recoveryStrength

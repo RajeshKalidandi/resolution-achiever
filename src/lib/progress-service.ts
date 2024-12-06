@@ -1,11 +1,10 @@
 import { supabase } from './supabase'
 import { AppError } from './errors'
-import type { Resolution, Milestone } from '@/types/database.types'
 
 interface ProgressUpdate {
   resolutionId: string
   progress: number
-  status: Resolution['status']
+  status: string
 }
 
 class ProgressService {
@@ -44,7 +43,7 @@ class ProgressService {
       const progress = Math.round((completedMilestones.length / milestones.length) * 100)
 
       // Determine status based on progress
-      let status: Resolution['status'] = 'in_progress'
+      let status: string = 'in_progress'
       if (progress === 0) status = 'not_started'
       else if (progress === 100) status = 'completed'
 

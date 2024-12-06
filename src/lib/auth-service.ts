@@ -1,6 +1,5 @@
 import { supabase } from './supabase'
 import { AppError } from './errors'
-import { useRouter } from 'next/navigation'
 
 class AuthService {
   async signOut() {

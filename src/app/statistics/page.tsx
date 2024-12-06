@@ -12,7 +12,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js'
-import { Bar, Doughnut } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 import { supabase } from '@/lib/supabase'
 import { AppError } from '@/lib/errors'
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card'
@@ -52,54 +52,54 @@ export default function StatisticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const loadStatistics = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new AppError('User not found', 'AUTH_ERROR', 404)
+
+        // Fetch resolutions
+        const { data: resolutions, error: resolutionsError } = await supabase
+          .from('resolutions')
+          .select('*')
+          .eq('user_id', user.id)
+
+        if (resolutionsError) throw new AppError(resolutionsError.message, resolutionsError.code, 500)
+
+        // Fetch upcoming milestones
+        const { data: milestones, error: milestonesError } = await supabase
+          .from('milestones')
+          .select('*')
+          .gte('target_date', new Date().toISOString().split('T')[0])
+          .order('target_date')
+          .limit(5)
+
+        if (milestonesError) throw new AppError(milestonesError.message, milestonesError.code, 500)
+
+        // Calculate statistics
+        const categoryStats = calculateCategoryStats(resolutions)
+        const monthlyProgress = calculateMonthlyProgress(resolutions)
+        
+        setStats({
+          totalResolutions: resolutions.length,
+          completedResolutions: resolutions.filter(r => r.status === 'completed').length,
+          upcomingMilestones: milestones.length,
+          avgProgress: calculateAverageProgress(resolutions),
+          categoryStats,
+          monthlyProgress,
+        })
+      } catch (error) {
+        if (error instanceof AppError) {
+          toast.error(error.message)
+        } else {
+          toast.error('Failed to load statistics')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
     loadStatistics()
   }, [])
-
-  const loadStatistics = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new AppError('User not found', 'AUTH_ERROR', 404)
-
-      // Fetch resolutions
-      const { data: resolutions, error: resolutionsError } = await supabase
-        .from('resolutions')
-        .select('*')
-        .eq('user_id', user.id)
-
-      if (resolutionsError) throw new AppError(resolutionsError.message, resolutionsError.code, 500)
-
-      // Fetch upcoming milestones
-      const { data: milestones, error: milestonesError } = await supabase
-        .from('milestones')
-        .select('*')
-        .gte('target_date', new Date().toISOString().split('T')[0])
-        .order('target_date')
-        .limit(5)
-
-      if (milestonesError) throw new AppError(milestonesError.message, milestonesError.code, 500)
-
-      // Calculate statistics
-      const categoryStats = calculateCategoryStats(resolutions)
-      const monthlyProgress = calculateMonthlyProgress(resolutions)
-      
-      setStats({
-        totalResolutions: resolutions.length,
-        completedResolutions: resolutions.filter(r => r.status === 'completed').length,
-        upcomingMilestones: milestones.length,
-        avgProgress: calculateAverageProgress(resolutions),
-        categoryStats,
-        monthlyProgress,
-      })
-    } catch (error) {
-      if (error instanceof AppError) {
-        toast.error(error.message)
-      } else {
-        toast.error('Failed to load statistics')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const calculateCategoryStats = (resolutions: Resolution[]): CategoryStats[] => {
     const stats = {} as Record<ResolutionCategory, CategoryStats>

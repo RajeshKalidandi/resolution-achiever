@@ -21,45 +21,45 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
   const [showTriggerForm, setShowTriggerForm] = useState(false)
 
   useEffect(() => {
+    const loadHabitData = async () => {
+      try {
+        // Load habit logs
+        const { data: habitLogs, error: logsError } = await supabase
+          .from('habit_logs')
+          .select('*')
+          .eq('resolution_id', resolution.id)
+          .order('check_in_date', { ascending: false })
+          .limit(30)
+
+        if (logsError) throw new AppError(logsError.message, logsError.code, 500)
+
+        // Load current streak
+        const { data: streakData, error: streakError } = await supabase
+          .from('streaks')
+          .select('*')
+          .eq('resolution_id', resolution.id)
+          .eq('is_active', true)
+          .single()
+
+        if (streakError && streakError.code !== 'PGRST116') {
+          throw new AppError(streakError.message, streakError.code, 500)
+        }
+
+        setLogs(habitLogs || [])
+        setStreak(streakData || null)
+      } catch (error) {
+        if (error instanceof AppError) {
+          toast.error(error.message)
+        } else {
+          toast.error('Failed to load habit data')
+        }
+      } finally {
+        setLoading(false)
+      }
+    }
+
     loadHabitData()
   }, [resolution.id])
-
-  const loadHabitData = async () => {
-    try {
-      // Load habit logs
-      const { data: habitLogs, error: logsError } = await supabase
-        .from('habit_logs')
-        .select('*')
-        .eq('resolution_id', resolution.id)
-        .order('check_in_date', { ascending: false })
-        .limit(30)
-
-      if (logsError) throw new AppError(logsError.message, logsError.code, 500)
-
-      // Load current streak
-      const { data: streakData, error: streakError } = await supabase
-        .from('streaks')
-        .select('*')
-        .eq('resolution_id', resolution.id)
-        .eq('is_active', true)
-        .single()
-
-      if (streakError && streakError.code !== 'PGRST116') {
-        throw new AppError(streakError.message, streakError.code, 500)
-      }
-
-      setLogs(habitLogs || [])
-      setStreak(streakData || null)
-    } catch (error) {
-      if (error instanceof AppError) {
-        toast.error(error.message)
-      } else {
-        toast.error('Failed to load habit data')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleCheckIn = async (mood: HabitLog['mood']) => {
     try {

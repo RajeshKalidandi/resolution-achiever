@@ -15,33 +15,30 @@ interface AddictionCardProps {
 
 export function AddictionCard({ addiction, onRelapse }: AddictionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [moneySaved, setMoneySaved] = useState<number | null>(null)
+  const [totalSaved, setTotalSaved] = useState<number | null>(null)
 
   const handleRelapse = async () => {
     if (!window.confirm('Are you sure you want to log a relapse?')) return
-
     try {
       setIsLoading(true)
       await habitService.logRelapse(addiction.id)
-      toast.success('Stay strong! Every setback is a setup for a comeback.')
       onRelapse()
-    } catch (error) {
+      toast.success('Relapse logged')
+    } catch {
       toast.error('Failed to log relapse')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const loadMoneySaved = async () => {
-    if (addiction.money_saved_per_day) {
-      const saved = await habitService.calculateMoneySaved(addiction.id)
-      setMoneySaved(saved)
-    }
-  }
-
   useEffect(() => {
+    const loadMoneySaved = async () => {
+      const moneySaved = (Math.floor((new Date().getTime() - new Date(addiction.quit_date).getTime()) / (1000 * 60 * 60 * 24))) * (addiction.money_saved_per_day || 0)
+      setTotalSaved(moneySaved)
+    }
+
     loadMoneySaved()
-  }, [addiction.id])
+  }, [addiction.quit_date, addiction.money_saved_per_day])
 
   const quitDate = new Date(addiction.quit_date)
   const now = new Date()
@@ -91,11 +88,11 @@ export function AddictionCard({ addiction, onRelapse }: AddictionCardProps) {
             </p>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">Relapses</p>
           </div>
-          {moneySaved !== null && (
+          {totalSaved !== null && (
             <div className="space-y-1">
               <DollarSign className="mx-auto h-4 w-4 text-green-500" />
               <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                ${moneySaved.toFixed(2)}
+                ${totalSaved.toFixed(2)}
               </p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">Money Saved</p>
             </div>

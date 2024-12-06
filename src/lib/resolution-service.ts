@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { AppError } from './errors'
-import type { Resolution, Milestone, ResolutionShare, SharePermission } from '@/types/database.types'
+import type { Resolution, Milestone, SharePermission } from '@/types/database.types'
 
 type CreateResolutionInput = Omit<Resolution, 'id' | 'created_at' | 'user_id' | 'milestones'>
 type UpdateResolutionInput = Partial<Omit<Resolution, 'id' | 'created_at' | 'user_id' | 'milestones'>>
@@ -30,7 +30,7 @@ export const resolutionService = {
       .select('*')
       .single()
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return resolution
   },
 
@@ -40,7 +40,7 @@ export const resolutionService = {
       .delete()
       .eq('id', id)
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
   },
 
   async getResolution(id: string): Promise<Resolution & { milestones: Milestone[] }> {
@@ -53,7 +53,7 @@ export const resolutionService = {
       .eq('id', id)
       .single()
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return resolution
   },
 
@@ -68,7 +68,7 @@ export const resolutionService = {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return resolutions
   },
 
@@ -79,7 +79,7 @@ export const resolutionService = {
       .select('*')
       .single()
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return milestone
   },
 
@@ -91,7 +91,7 @@ export const resolutionService = {
       .select('*')
       .single()
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return milestone
   },
 
@@ -101,7 +101,7 @@ export const resolutionService = {
       .delete()
       .eq('id', id)
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
   },
 
   async toggleMilestoneCompletion(id: string, completed: boolean): Promise<Milestone> {
@@ -117,7 +117,7 @@ export const resolutionService = {
       .select('*')
       .single()
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return milestone
   },
 
@@ -137,7 +137,7 @@ export const resolutionService = {
       `)
       .eq('resolution_shares.shared_with_email', user.email)
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return resolutions
   },
 
@@ -182,7 +182,7 @@ export const resolutionService = {
       .eq('resolution_id', resolutionId)
       .eq('shared_with_id', userId)
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
   },
 
   async getSharedUsers(resolutionId: string): Promise<{ id: string; email: string; permission: SharePermission }[]> {
@@ -195,7 +195,7 @@ export const resolutionService = {
       `)
       .eq('resolution_id', resolutionId)
 
-    if (error) throw error
+    if (error) throw new AppError(error.message, error.code, 500)
     return shares.map(share => ({
       id: share.shared_with_id,
       email: share.shared_with_email,
