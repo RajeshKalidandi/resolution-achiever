@@ -44,6 +44,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         if (error) throw new AppError(error.message, error.code, 400)
         if (data.session) {
           toast.success('Welcome back!')
+          router.push('/dashboard')
           router.refresh()
         }
       }
@@ -100,11 +101,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
           </Button>
           <p className="text-center text-sm text-zinc-400">

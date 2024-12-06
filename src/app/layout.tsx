@@ -1,6 +1,8 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { Providers } from './providers'
 import { ThemeProvider } from '@/components/theme-provider'
 
@@ -11,11 +13,19 @@ export const metadata = {
   description: 'Track and achieve your New Year resolutions and personal goals with our modern goal-tracking platform.',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = createServerComponentClient({ cookies })
+
+  try {
+    await supabase.auth.getSession()
+  } catch (error) {
+    console.error('Failed to get auth session:', error)
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
