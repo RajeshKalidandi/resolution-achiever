@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
-import { format, differenceInDays, isSameDay } from 'date-fns'
+import { format, isSameDay } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import { AppError } from '@/lib/errors'
 import { Button } from '@/components/ui/button'

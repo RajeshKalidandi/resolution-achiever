@@ -19,22 +19,22 @@ export function ProgressTracker({ resolution, milestones, onUpdate }: ProgressTr
   const [updating, setUpdating] = useState(false)
   const [progressHistory, setProgressHistory] = useState<{ date: string; progress: number }[]>([])
 
-  useEffect(() => {
-    const loadProgressHistory = async () => {
-      try {
-        const { data: history, error } = await supabase
-          .from('progress_history')
-          .select('*')
-          .eq('resolution_id', resolution.id)
-          .order('created_at', { ascending: true })
+  const loadProgressHistory = async () => {
+    try {
+      const { data: history, error } = await supabase
+        .from('progress_history')
+        .select('*')
+        .eq('resolution_id', resolution.id)
+        .order('created_at', { ascending: true })
 
-        if (error) throw error
-        setProgressHistory(history || [])
-      } catch (error) {
-        console.error('Error loading progress history:', error)
-      }
+      if (error) throw error
+      setProgressHistory(history || [])
+    } catch (error) {
+      console.error('Error loading progress history:', error)
     }
+  }
 
+  useEffect(() => {
     loadProgressHistory()
   }, [resolution.id])
 
