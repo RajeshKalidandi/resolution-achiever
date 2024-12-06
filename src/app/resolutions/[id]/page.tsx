@@ -264,7 +264,9 @@ export default function ResolutionPage({ params }: { params: { id: string } }) {
                         <div>
                           <p className="text-white">{milestone.title}</p>
                           <p className="text-sm text-zinc-400">
-                            Due: {new Date(milestone.target_date).toLocaleDateString()}
+                            {milestone.target_date 
+                              ? `Due: ${new Date(milestone.target_date).toLocaleDateString()}`
+                              : 'No due date set'}
                           </p>
                           {milestone.completed_at && (
                             <p className="text-sm text-green-400">
