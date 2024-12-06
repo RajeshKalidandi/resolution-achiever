@@ -63,6 +63,7 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
 
   const handleCheckIn = async (mood: HabitLog['mood']) => {
     try {
+      setLoading(true)
       const today = new Date().toISOString().split('T')[0]
       
       // Check if already checked in today
@@ -157,13 +158,24 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
 
       toast.success('Check-in recorded!')
       onUpdate()
-      await loadHabitData()
+      const { data: logs, error } = await supabase
+        .from('habit_logs')
+        .select('*')
+        .eq('resolution_id', resolution.id)
+        .order('check_in_date', { ascending: false })
+        .limit(7)
+
+      if (error) throw new AppError(error.message, error.code, 500)
+      setLogs(logs)
+      setShowTriggerForm(false)
     } catch (error) {
       if (error instanceof AppError) {
         toast.error(error.message)
       } else {
         toast.error('Failed to record check-in')
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -188,7 +200,15 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
       form.reset()
       setShowTriggerForm(false)
       toast.success('Trigger logged successfully. Stay strong!')
-      await loadHabitData()
+      const { data: logs, error: logsError } = await supabase
+        .from('habit_logs')
+        .select('*')
+        .eq('resolution_id', resolution.id)
+        .order('check_in_date', { ascending: false })
+        .limit(7)
+
+      if (logsError) throw new AppError(logsError.message, logsError.code, 500)
+      setLogs(logs)
     } catch (error) {
       if (error instanceof AppError) {
         toast.error(error.message)

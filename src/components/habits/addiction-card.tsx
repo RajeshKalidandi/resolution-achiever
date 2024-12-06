@@ -33,8 +33,8 @@ export function AddictionCard({ addiction, onRelapse }: AddictionCardProps) {
 
   useEffect(() => {
     const loadMoneySaved = async () => {
-      const moneySaved = (Math.floor((new Date().getTime() - new Date(addiction.quit_date).getTime()) / (1000 * 60 * 60 * 24))) * (addiction.money_saved_per_day || 0)
-      setTotalSaved(moneySaved)
+      const daysSince = Math.floor((new Date().getTime() - new Date(addiction.quit_date).getTime()) / (1000 * 60 * 60 * 24))
+      setTotalSaved(daysSince * (addiction.money_saved_per_day || 0))
     }
 
     loadMoneySaved()
