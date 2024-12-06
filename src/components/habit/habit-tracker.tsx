@@ -19,6 +19,8 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
   const [streak, setStreak] = useState<Streak | null>(null)
   const [loading, setLoading] = useState(true)
   const [showTriggerForm, setShowTriggerForm] = useState(false)
+  const [triggerNotes, setTriggerNotes] = useState('')
+  const [copingStrategy, setCopingStrategy] = useState('')
 
   useEffect(() => {
     const loadHabitData = async () => {
@@ -65,109 +67,56 @@ export function HabitTracker({ resolution, onUpdate }: HabitTrackerProps) {
     try {
       setLoading(true)
       const today = new Date().toISOString().split('T')[0]
-      
-      // Check if already checked in today
-      const existingLog = logs.find(log => 
-        isSameDay(new Date(log.check_in_date), new Date(today))
-      )
-      
-      if (existingLog) {
-        toast.error('You\'ve already checked in today')
-        return
-      }
 
-      // Create new log
-      const { error: logError } = await supabase
-        .from('habit_logs')
-        .insert({
-          resolution_id: resolution.id,
-          check_in_date: today,
-          mood,
-        })
-
-      if (logError) throw new AppError(logError.message, logError.code, 500)
-
-      // Update streak
-      const lastCheckIn = new Date(resolution.last_check_in || today)
-      const daysSinceLastCheckIn = differenceInDays(new Date(), lastCheckIn)
-
-      if (daysSinceLastCheckIn <= 1) {
-        // Streak continues or starts
-        const newStreakCount = resolution.streak_count + 1
-        
-        const { error: updateError } = await supabase
-          .from('resolutions')
-          .update({
-            streak_count: newStreakCount,
-            last_check_in: today,
-          })
-          .eq('id', resolution.id)
-
-        if (updateError) throw new AppError(updateError.message, updateError.code, 500)
-
-        // Update or create streak record
-        if (streak) {
-          await supabase
-            .from('streaks')
-            .update({
-              current_count: newStreakCount,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', streak.id)
-        } else {
-          await supabase
-            .from('streaks')
-            .insert({
-              resolution_id: resolution.id,
-              start_date: today,
-              current_count: 1,
-              is_active: true,
-            })
-        }
-      } else {
-        // Streak broken
-        if (streak) {
-          await supabase
-            .from('streaks')
-            .update({
-              end_date: lastCheckIn.toISOString(),
-              is_active: false,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', streak.id)
-        }
-
-        // Start new streak
-        await supabase
-          .from('streaks')
-          .insert({
-            resolution_id: resolution.id,
-            start_date: today,
-            current_count: 1,
-            is_active: true,
-          })
-
-        await supabase
-          .from('resolutions')
-          .update({
-            streak_count: 1,
-            last_check_in: today,
-          })
-          .eq('id', resolution.id)
-      }
-
-      toast.success('Check-in recorded!')
-      onUpdate()
-      const { data: logs, error } = await supabase
+      // Get current logs first
+      const { data: currentLogs, error: logsError } = await supabase
         .from('habit_logs')
         .select('*')
         .eq('resolution_id', resolution.id)
         .order('check_in_date', { ascending: false })
         .limit(7)
 
-      if (error) throw new AppError(error.message, error.code, 500)
-      setLogs(logs)
+      if (logsError) throw new AppError(logsError.message, logsError.code, 500)
+      
+      // Check if already checked in today
+      const existingLog = currentLogs.find(log => 
+        isSameDay(new Date(log.check_in_date), new Date(today))
+      )
+      
+      if (existingLog) {
+        toast.error('Already checked in today')
+        return
+      }
+
+      // Create new log
+      const { error: createError } = await supabase
+        .from('habit_logs')
+        .insert([{
+          resolution_id: resolution.id,
+          check_in_date: today,
+          mood,
+          trigger_notes: triggerNotes,
+          coping_strategy: copingStrategy
+        }])
+
+      if (createError) throw new AppError(createError.message, createError.code, 500)
+
+      // Fetch updated logs
+      const { data: updatedLogs, error: updateError } = await supabase
+        .from('habit_logs')
+        .select('*')
+        .eq('resolution_id', resolution.id)
+        .order('check_in_date', { ascending: false })
+        .limit(7)
+
+      if (updateError) throw new AppError(updateError.message, updateError.code, 500)
+
+      setLogs(updatedLogs)
       setShowTriggerForm(false)
+      setTriggerNotes('')
+      setCopingStrategy('')
+      toast.success('Check-in recorded!')
+      onUpdate()
     } catch (error) {
       if (error instanceof AppError) {
         toast.error(error.message)
