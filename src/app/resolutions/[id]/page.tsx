@@ -81,8 +81,7 @@ export default function ResolutionPage({ params }: { params: { id: string } }) {
         title,
         description,
         target_date,
-        status: 'not_started',
-        updated_at: now,
+        status: 'not_started'
       })
       toast.success('Milestone added successfully')
       setShowMilestoneForm(false)
