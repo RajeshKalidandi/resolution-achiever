@@ -161,7 +161,9 @@ export function ProgressTracker({ resolution, milestones, onUpdate }: ProgressTr
                   <div>
                     <p className="text-sm font-medium text-white">{milestone.title}</p>
                     <p className="text-xs text-zinc-400">
-                      Due: {new Date(milestone.target_date).toLocaleDateString()}
+                      {milestone.target_date !== null && milestone.target_date !== undefined
+                        ? `Due: ${new Date(milestone.target_date).toLocaleDateString()}`
+                        : 'No due date set'}
                     </p>
                   </div>
                 </div>
