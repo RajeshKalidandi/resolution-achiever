@@ -68,7 +68,6 @@ export default function ResolutionPage({ params }: { params: { id: string } }) {
     const title = formData.get('title') as string
     const target_date = formData.get('target_date') as string
     const description = formData.get('description') as string || null
-    const now = new Date().toISOString()
     
     if (!title || !target_date) {
       toast.error('Please fill in all fields')
