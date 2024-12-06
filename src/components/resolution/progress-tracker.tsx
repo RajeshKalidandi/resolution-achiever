@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
 import { supabase } from '@/lib/supabase'
 import { progressService } from '@/lib/progress-service'
@@ -19,7 +19,7 @@ export function ProgressTracker({ resolution, milestones, onUpdate }: ProgressTr
   const [updating, setUpdating] = useState(false)
   const [progressHistory, setProgressHistory] = useState<{ date: string; progress: number }[]>([])
 
-  const loadProgressHistory = async () => {
+  const loadProgressHistory = useCallback(async () => {
     try {
       const { data: history, error } = await supabase
         .from('progress_history')
@@ -32,11 +32,11 @@ export function ProgressTracker({ resolution, milestones, onUpdate }: ProgressTr
     } catch (error) {
       console.error('Error loading progress history:', error)
     }
-  }
+  }, [resolution.id])
 
   useEffect(() => {
     loadProgressHistory()
-  }, [resolution.id])
+  }, [loadProgressHistory])
 
   const handleMilestoneToggle = async (milestone: Milestone) => {
     setUpdating(true)

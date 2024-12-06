@@ -38,7 +38,7 @@ export interface Milestone {
   title: string
   description: string | null
   status: ResolutionStatus
-  target_date: string
+  target_date: string | null
   completed_at: string | null
   created_at: string
   updated_at: string

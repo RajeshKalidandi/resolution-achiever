@@ -4,7 +4,7 @@ import type { Resolution, Milestone, SharePermission } from '@/types/database.ty
 
 type CreateResolutionInput = Omit<Resolution, 'id' | 'created_at' | 'user_id' | 'milestones'>
 type UpdateResolutionInput = Partial<Omit<Resolution, 'id' | 'created_at' | 'user_id' | 'milestones'>>
-type CreateMilestoneInput = Omit<Milestone, 'id' | 'created_at' | 'completed' | 'completed_at'>
+type CreateMilestoneInput = Omit<Milestone, 'id' | 'created_at' | 'updated_at' | 'completed_at'>
 
 export const resolutionService = {
   async createResolution(data: CreateResolutionInput): Promise<Resolution> {
@@ -73,9 +73,17 @@ export const resolutionService = {
   },
 
   async addMilestone(data: CreateMilestoneInput): Promise<Milestone> {
+    const now = new Date().toISOString()
     const { data: milestone, error } = await supabase
       .from('milestones')
-      .insert([data])
+      .insert([{
+        ...data,
+        status: data.status || 'not_started',
+        description: data.description || null,
+        target_date: data.target_date || null,
+        created_at: now,
+        updated_at: now
+      }])
       .select('*')
       .single()
 
@@ -86,7 +94,10 @@ export const resolutionService = {
   async updateMilestone(id: string, data: Partial<Milestone>): Promise<Milestone> {
     const { data: milestone, error } = await supabase
       .from('milestones')
-      .update(data)
+      .update({
+        ...data,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .select('*')
       .single()

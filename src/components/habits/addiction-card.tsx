@@ -7,6 +7,7 @@ import { AlertTriangle, Trophy, Clock, DollarSign } from 'lucide-react'
 import type { Addiction } from '@/lib/habit-service'
 import { habitService } from '@/lib/habit-service'
 import { toast } from 'react-hot-toast'
+import { AddictionStats } from './addiction-stats'
 
 interface AddictionCardProps {
   addiction: Addiction
@@ -61,7 +62,7 @@ export function AddictionCard({ addiction, onRelapse }: AddictionCardProps) {
         <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
           {addiction.description}
         </p>
-        <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4 mb-6">
           <div className="space-y-1">
             <Trophy className="mx-auto h-4 w-4 text-yellow-500" />
             <p className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -93,6 +94,9 @@ export function AddictionCard({ addiction, onRelapse }: AddictionCardProps) {
             </div>
           )}
         </div>
+
+        <AddictionStats addiction={addiction} />
+
         {addiction.triggers && addiction.triggers.length > 0 && (
           <div className="mt-4">
             <p className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
